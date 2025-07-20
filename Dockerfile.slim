@@ -1,0 +1,31 @@
+# Use a lightweight official Python image
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Create non-root user
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+
+# Set working directory
+WORKDIR /app
+
+# Install required packages
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code
+COPY . .
+
+# Give ownership of /app to the non-root user
+RUN chown -R appuser:appgroup /app
+RUN chmod -R u+x /app
+# Switch to the non-root user
+USER appuser
+
+# Expose Flask app port
+EXPOSE 5000
+
+# Run the application
+CMD ["python", "app.py"]
